@@ -248,3 +248,273 @@ class ButtonExamplesScaffold extends StatelessWidget{
     }
 }
 
+
+class InputWidgetsShowcase extends StatefulWidget {
+  @override
+  State<InputWidgetsShowcase> createState() => _InputWidgetsShowcaseState();
+}
+
+
+class _InputWidgetsShowcaseState extends State<InputWidgetsShowcase> {
+  // Controllers for Text Fields
+  final TextEditingController textController = TextEditingController();
+  final TextEditingController formTextController = TextEditingController();
+
+  // Dropdown and Radio Selection
+  String? dropdownValue;
+  String? radioValue;
+
+  // Boolean states for Checkboxes and Switches
+  bool isChecked = false;
+  bool switchValue = false;
+
+  // Slider value
+  double sliderValue = 0.5;
+
+  // Date and Time Picker Variables
+  DateTime? selectedDate;
+  TimeOfDay? selectedTime;
+
+  // Form Key
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  Future<void> _pickDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _pickTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: selectedTime ?? TimeOfDay.now(),
+    );
+    if (picked != null && picked != selectedTime) {
+      setState(() {
+        selectedTime = picked;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Input Widgets Showcase"),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "TextField (General Input)",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                TextField(
+                  controller: textController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "Enter some text",
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "TextFormField (Form-Friendly Input)",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                TextFormField(
+                  controller: formTextController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "Enter form text",
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter some text";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "DropdownButtonFormField",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                DropdownButtonFormField<String>(
+                  value: dropdownValue,
+                  items: ["Option 1", "Option 2", "Option 3"]
+                      .map((option) => DropdownMenuItem(
+                            value: option,
+                            child: Text(option),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      dropdownValue = value;
+                    });
+                  },
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Choose an option",
+                  ),
+                  validator: (value) =>
+                      value == null ? "Please select an option" : null,
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Checkbox",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                CheckboxListTile(
+                  title: const Text("Check me!"),
+                  value: isChecked,
+                  onChanged: (value) {
+                    setState(() {
+                      isChecked = value!;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Switch",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SwitchListTile(
+                  title: const Text("Switch me!"),
+                  value: switchValue,
+                  onChanged: (value) {
+                    setState(() {
+                      switchValue = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Slider",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Slider(
+                  value: sliderValue,
+                  min: 0,
+                  max: 1,
+                  divisions: 10,
+                  label: sliderValue.toStringAsFixed(2),
+                  onChanged: (value) {
+                    setState(() {
+                      sliderValue = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Radio Buttons",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Column(
+                  children: [
+                    RadioListTile<String>(
+                      title: const Text("Option A"),
+                      value: "A",
+                      groupValue: radioValue,
+                      onChanged: (value) {
+                        setState(() {
+                          radioValue = value;
+                        });
+                      },
+                    ),
+                    RadioListTile<String>(
+                      title: const Text("Option B"),
+                      value: "B",
+                      groupValue: radioValue,
+                      onChanged: (value) {
+                        setState(() {
+                          radioValue = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Date Picker",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => _pickDate(context),
+                      child: const Text("Pick Date"),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      selectedDate != null
+                          ? "${selectedDate!.toLocal()}".split(' ')[0]
+                          : "No date selected",
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Time Picker",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => _pickTime(context),
+                      child: const Text("Pick Time"),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      selectedTime != null
+                          ? selectedTime!.format(context)
+                          : "No time selected",
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Form Submitted Successfully!"),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text("Submit Form"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
