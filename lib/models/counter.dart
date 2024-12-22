@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 part 'counter.g.dart';
@@ -11,7 +12,24 @@ class Counter {
   final String name;
 
   @HiveField(2)
-  final int detailCount;
+  int detailCount = 0;
 
-  Counter({required this.id, required this.name, this.detailCount = 0});
+  @HiveField(3)
+  bool requiredAdditionalData = false;
+
+  @HiveField(4)
+  final List<Map> properties;
+
+  Counter(
+      {required this.id,
+      required this.name,
+      detailCount = 0,
+      required this.properties}) {
+    this.detailCount = detailCount;
+    for (Map property in this.properties) {
+      if (property['required']) {
+        this.requiredAdditionalData = true;
+      }
+    }
+  }
 }

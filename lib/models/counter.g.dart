@@ -19,20 +19,27 @@ class CounterAdapter extends TypeAdapter<Counter> {
     return Counter(
       id: fields[0] as int,
       name: fields[1] as String,
-      detailCount: fields[2] as int,
-    );
+      detailCount: fields[2] as dynamic,
+      properties: (fields[4] as List)
+          .map((dynamic e) => (e as Map).cast<String, dynamic>())
+          .toList(),
+    )..requiredAdditionalData = fields[3] as bool;
   }
 
   @override
   void write(BinaryWriter writer, Counter obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.detailCount);
+      ..write(obj.detailCount)
+      ..writeByte(3)
+      ..write(obj.requiredAdditionalData)
+      ..writeByte(4)
+      ..write(obj.properties);
   }
 
   @override
