@@ -10,13 +10,7 @@ class CreateCounterModel extends StatefulWidget {
       : dynamicFields = {
           'id': id,
           'name': "",
-          'data': [
-            {
-              'fieldname': '',
-              'fieldtype': '',
-              'required': false,
-            }
-          ]
+          'data': <Map>[],
         },
         super(key: key);
 
@@ -33,6 +27,7 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
         'fieldname': '',
         'fieldtype': '',
         'required': false,
+        'values': <String>[],
       }); // Add a new empty field.
     });
   }
@@ -94,9 +89,17 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
                   },
                 ),
                 const SizedBox(height: 16), // Adds spacing between fields
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [Text("Required Fields")]),
+                widget.dynamicFields['data'].length != 0
+                    ? Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                        Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Text(
+                            "Required \n Fields",
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      ])
+                    : SizedBox.shrink(),
 
                 // Constraining the ListView.builder
                 ConstrainedBox(
@@ -110,71 +113,85 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
                     itemBuilder: (context, index) {
                       return Container(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Row(
+                        child: Column(
                           children: [
-                            Flexible(
-                              flex: 3,
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                  labelText: 'Field Name ${index + 1}',
+                            Row(
+                              children: [
+                                Flexible(
+                                  flex: 3,
+                                  child: TextFormField(
+                                    decoration: InputDecoration(
+                                      labelText: 'Field Name ${index + 1}',
+                                    ),
+                                    initialValue: '',
+                                    onChanged: (value) {
+                                      widget.dynamicFields['data'][index]
+                                          ['index'] = index;
+                                      widget.dynamicFields['data'][index]
+                                          ['fieldname'] = value;
+                                    },
+                                    validator: (value) {
+                                      return value == null || value.isEmpty
+                                          ? "This field cannot be empty"
+                                          : null;
+                                    },
+                                  ),
                                 ),
-                                initialValue: '',
-                                onChanged: (value) {
-                                  widget.dynamicFields['data'][index]['index'] =
-                                      index;
-                                  widget.dynamicFields['data'][index]
-                                      ['fieldname'] = value;
-                                },
-                                validator: (value) {
-                                  return value == null || value.isEmpty
-                                      ? "This field cannot be empty"
-                                      : null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Flexible(
-                              flex: 3,
-                              child: DropdownButtonFormField(
-                                decoration: InputDecoration(
-                                  labelText: 'Field type',
+                                const SizedBox(
+                                  width: 5,
                                 ),
-                                items: [
-                                  "Numero Intero",
-                                  "Testo",
-                                  "Data",
-                                  "Set di valori"
-                                ]
-                                    .map((e) => DropdownMenuItem(
-                                        value: e, child: Text(e)))
-                                    .toList(),
-                                onChanged: (value) {
-                                  widget.dynamicFields['data'][index]
-                                      ['fieldtype'] = value;
-                                },
-                                validator: (value) => value == null
-                                    ? "You must choose a type for the field"
-                                    : null,
-                              ),
+                                Flexible(
+                                  flex: 3,
+                                  child: DropdownButtonFormField(
+                                    decoration: InputDecoration(
+                                      labelText: 'Field type',
+                                    ),
+                                    items: [
+                                      "Numero Intero",
+                                      "Testo",
+                                      "Data",
+                                      "Set di valori"
+                                    ]
+                                        .map((e) => DropdownMenuItem(
+                                            value: e, child: Text(e)))
+                                        .toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        widget.dynamicFields['data'][index]
+                                            ['fieldtype'] = value;
+                                      });
+                                    },
+                                    validator: (value) => value == null
+                                        ? "You must choose a type for the field"
+                                        : null,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 15,
+                                ),
+                                Flexible(
+                                  flex: 1,
+                                  child: Checkbox(
+                                    value: widget.dynamicFields['data'][index]
+                                        ['required'],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        widget.dynamicFields['data'][index]
+                                            ['required'] = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(
-                              width: 15,
-                            ),
-                            Flexible(
-                              flex: 1,
-                              child: Checkbox(
-                                value: widget.dynamicFields['data'][index]
-                                    ['required'],
-                                onChanged: (value) {
-                                  setState(() {
-                                    widget.dynamicFields['data'][index]
-                                        ['required'] = value;
-                                  });
-                                },
-                              ),
-                            ),
+                            widget.dynamicFields['data'][index]['fieldtype'] ==
+                                    "Set di valori"
+                                ? MultiSelectForm(
+                                    values: widget.dynamicFields['data'][index]
+                                        ['values'])
+                                : Divider(
+                                    height: 35,
+                                  ),
                           ],
                         ),
                       );
@@ -208,6 +225,66 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
           TextButton(
             onPressed: _createCounter,
             child: const Text('Create Counter'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MultiSelectForm extends StatefulWidget {
+  final List<String> values;
+  const MultiSelectForm({super.key, required this.values});
+  @override
+  _MultiSelectFormState createState() => _MultiSelectFormState();
+}
+
+class _MultiSelectFormState extends State<MultiSelectForm> {
+  final TextEditingController _controller = TextEditingController();
+
+  void _addValue(String value) {
+    if (value.isNotEmpty && !widget.values.contains(value)) {
+      setState(() {
+        widget.values.add(value);
+      });
+      _controller.clear(); // Clear the input box
+    }
+  }
+
+  void _removeValue(String value) {
+    setState(() {
+      widget.values.remove(value);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Text field to input values
+          TextField(
+            controller: _controller,
+            onSubmitted: _addValue, // Add value when 'Enter' is pressed
+            decoration: InputDecoration(
+              labelText: 'Enter values',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 16.0),
+          // Wrap widget to display chips
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 4.0,
+            children: widget.values.map((value) {
+              return Chip(
+                label: Text(value),
+                deleteIcon: Icon(Icons.close),
+                onDeleted: () => _removeValue(value),
+              );
+            }).toList(),
           ),
         ],
       ),
