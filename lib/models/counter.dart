@@ -26,9 +26,9 @@ class Counter {
       detailCount = 0,
       required this.properties}) {
     this.detailCount = detailCount;
-    for (Map property in this.properties) {
+    for (Map property in properties) {
       if (property['required']) {
-        this.requiredAdditionalData = true;
+        requiredAdditionalData = true;
       }
     }
   }
