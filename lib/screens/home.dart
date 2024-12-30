@@ -49,9 +49,23 @@ class MainHomeScaffold extends StatelessWidget {
                           counter: counter),
                       tileColor: Colors.amber[300],
                       onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) =>
-                                CounterDetails(id: counter.id)));
+                        showModalBottomSheet(
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            context: context,
+                            builder: (context) {
+                              return DraggableScrollableSheet(
+                                  initialChildSize: 0.5,
+                                  maxChildSize: 0.86,
+                                  minChildSize: 0.1,
+                                  expand: false,
+                                  builder: (context,
+                                      ScrollController scrollController) {
+                                    return CounterDetails(
+                                        id: counter.id,
+                                        scrollController: scrollController);
+                                  });
+                            });
                       },
                     );
                   }),

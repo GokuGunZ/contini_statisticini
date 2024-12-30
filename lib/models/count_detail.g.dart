@@ -18,8 +18,8 @@ class CountDetailAdapter extends TypeAdapter<CountDetail> {
     };
     return CountDetail(
       id: fields[0] as int,
-      name: fields[1] as String,
-      detailCount: fields[2] as int,
+      counterId: fields[1] as int,
+      countNumber: fields[2] as int,
     )
       ..date = fields[3] as DateTime
       ..attributes = fields[4] as CustomAttribute;
@@ -32,9 +32,9 @@ class CountDetailAdapter extends TypeAdapter<CountDetail> {
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.name)
+      ..write(obj.counterId)
       ..writeByte(2)
-      ..write(obj.detailCount)
+      ..write(obj.countNumber)
       ..writeByte(3)
       ..write(obj.date)
       ..writeByte(4)

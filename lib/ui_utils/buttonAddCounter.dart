@@ -1,4 +1,5 @@
 import 'package:contini_statisticini/models/counter.dart';
+import 'package:contini_statisticini/models/count_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
@@ -8,11 +9,12 @@ class TrailerButtonContainer extends StatefulWidget {
   final Counter counter;
   final bool requiredAdditionalData;
 
-  const TrailerButtonContainer(
+  TrailerButtonContainer(
       {super.key,
       required this.requiredAdditionalData,
       required this.box,
-      required this.counter});
+      required this.counter, 
+      });
 
   @override
   State<TrailerButtonContainer> createState() => _TrailerButtonContainerState();
@@ -60,8 +62,9 @@ class detailedCountModal extends StatefulWidget {
 }
 
 class _detailedCountModalState extends State<detailedCountModal> {
-  GlobalKey<FormState> _addDetailedCount = GlobalKey<FormState>();
-
+  final GlobalKey<FormState> _addDetailedCount = GlobalKey<FormState>();
+  final Box<CountDetail> _countDetailBox = Hive.box<CountDetail>('count_detail');
+      
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -94,10 +97,11 @@ class _detailedCountModalState extends State<detailedCountModal> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_addDetailedCount.currentState!.validate()) {
                   _addDetailedCount.currentState!.save();
                   // add --- await widget.countDetails.put(data);
+                  await _countDetailBox.add(CountDetail(id: _countDetailBox.length, counterId: widget.counter.id, countNumber: widget.counter.detailCount));
                   print(widget.countDetails);
                   Navigator.of(context).pop();
                 }

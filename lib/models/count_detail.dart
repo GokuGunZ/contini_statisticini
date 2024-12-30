@@ -10,10 +10,10 @@ class CountDetail {
   int id;
 
   @HiveField(1)
-  final String name;
+  final int counterId;
 
   @HiveField(2)
-  final int detailCount;
+  final int countNumber;
 
   @HiveField(3)
   DateTime date = DateTime.now();
@@ -21,5 +21,5 @@ class CountDetail {
   @HiveField(4)
   CustomAttribute attributes = CustomAttribute(id: 0);
 
-  CountDetail({required this.id, required this.name, this.detailCount = 0});
+  CountDetail({required this.id, required this.counterId, required this.countNumber});
 }

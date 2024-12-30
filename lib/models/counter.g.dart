@@ -21,7 +21,7 @@ class CounterAdapter extends TypeAdapter<Counter> {
       name: fields[1] as String,
       detailCount: fields[2] as dynamic,
       properties: (fields[4] as List)
-          .map((dynamic e) => (e as Map).cast<String, dynamic>())
+          .map((dynamic e) => (e as Map).cast<dynamic, dynamic>())
           .toList(),
     )..requiredAdditionalData = fields[3] as bool;
   }
