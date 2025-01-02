@@ -22,7 +22,7 @@ class CountDetailAdapter extends TypeAdapter<CountDetail> {
       countNumber: fields[2] as int,
     )
       ..date = fields[3] as DateTime
-      ..attributes = fields[4] as CustomAttribute;
+      ..attributes = fields[4] as CustomAttribute?;
   }
 
   @override

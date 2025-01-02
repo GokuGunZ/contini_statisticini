@@ -5,16 +5,18 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 
 class TrailerButtonContainer extends StatefulWidget {
-  final Box<Counter> box;
+  final Box<Counter> counterBox;
+  final Box<CountDetail> counterDetailBox;
   final Counter counter;
   final bool requiredAdditionalData;
 
-  TrailerButtonContainer(
-      {super.key,
-      required this.requiredAdditionalData,
-      required this.box,
-      required this.counter, 
-      });
+  TrailerButtonContainer({
+    super.key,
+    required this.requiredAdditionalData,
+    required this.counterBox,
+    required this.counter,
+    required this.counterDetailBox,
+  });
 
   @override
   State<TrailerButtonContainer> createState() => _TrailerButtonContainerState();
@@ -27,20 +29,23 @@ class _TrailerButtonContainerState extends State<TrailerButtonContainer> {
         width: 100,
         child: widget.requiredAdditionalData
             ? SingleButtonTrailer(
-                box: widget.box,
+                box: widget.counterBox,
                 counter: widget.counter,
-                fullDetailFunc: fullDetailsAdd)
+                fullDetailFunc: fullDetailsAdd,
+                counterDetailBox: widget.counterDetailBox)
             : DoubleButtonTrailer(
-                box: widget.box,
+                box: widget.counterBox,
                 counter: widget.counter,
-                fullDetailFunc: fullDetailsAdd));
+                fullDetailFunc: fullDetailsAdd,
+                counterDetailBox: widget.counterDetailBox));
   }
 
   void fullDetailsAdd() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return detailedCountModal(counter: widget.counter, box: widget.box);
+        return detailedCountModal(
+            counter: widget.counter, box: widget.counterBox);
       },
     );
   }
@@ -63,28 +68,35 @@ class detailedCountModal extends StatefulWidget {
 
 class _detailedCountModalState extends State<detailedCountModal> {
   final GlobalKey<FormState> _addDetailedCount = GlobalKey<FormState>();
-  final Box<CountDetail> _countDetailBox = Hive.box<CountDetail>('count_detail');
-      
+  final Box<CountDetail> _countDetailBox = Hive.box<CountDetail>('countDetail');
+
   @override
   Widget build(BuildContext context) {
     return Form(
       key: _addDetailedCount,
       child: AlertDialog(
-          title: Center(child: Text('${widget.counter.name} Count')),
+          title: Center(child: Text('${widget.counter.name} count')),
           content: SingleChildScrollView(
               child: Column(
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text('Count \nTime'),
-                  DateTimePickerRow(countDetails: widget.countDetails),
+                  Text('Count Time'),
                 ],
               ),
+              DateTimePickerRow(countDetails: widget.countDetails),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: widget.counter.properties.map((item) {
-                  return countDetailForm(item);
+                  return Column(
+                    children: [
+                      countDetailForm(item),
+                      SizedBox(
+                        height: 8,
+                      )
+                    ],
+                  );
                 }).toList(),
               ),
             ],
@@ -101,8 +113,10 @@ class _detailedCountModalState extends State<detailedCountModal> {
                 if (_addDetailedCount.currentState!.validate()) {
                   _addDetailedCount.currentState!.save();
                   // add --- await widget.countDetails.put(data);
-                  await _countDetailBox.add(CountDetail(id: _countDetailBox.length, counterId: widget.counter.id, countNumber: widget.counter.detailCount));
-                  print(widget.countDetails);
+                  await _countDetailBox.add(CountDetail(
+                      id: _countDetailBox.length,
+                      counterId: widget.counter.id,
+                      countNumber: widget.counter.detailCount));
                   Navigator.of(context).pop();
                 }
               },
@@ -163,15 +177,18 @@ class _detailedCountModalState extends State<detailedCountModal> {
           items: dropdownItems,
         );
       case 'Data':
-        return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Column(children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text('${item['fieldname']}'),
-              DateTimePickerRow(
-                countDetails: widget.countDetails,
-                fieldname: item['fieldname'],
-              )
-            ]);
+            ],
+          ),
+          DateTimePickerRow(
+            countDetails: widget.countDetails,
+            fieldname: item['fieldname'],
+          )
+        ]);
       default:
         return TextFormField(
           decoration: InputDecoration(labelText: "${item['fieldname']}"),
@@ -210,13 +227,13 @@ class _DateTimePickerRowState extends State<DateTimePickerRow> {
           widget.countDetails['selectedDate'] != null
               ? "${widget.countDetails['selectedDate']!.toLocal()}"
                   .split(' ')[0]
-              : "No date selected",
+              : "No date \nselected",
         ),
         const SizedBox(width: 16),
         Text(
           widget.countDetails['selectedTime'] != null
               ? widget.countDetails['selectedTime']!.format(context)
-              : "No time selected",
+              : "No time \nselected",
         ),
         const SizedBox(width: 16),
         IconButton(
@@ -258,11 +275,13 @@ class DoubleButtonTrailer extends StatefulWidget {
   final Box<Counter> box;
   final Counter counter;
   final VoidCallback fullDetailFunc;
+  final Box<CountDetail> counterDetailBox;
   const DoubleButtonTrailer(
       {super.key,
       required this.box,
       required this.counter,
-      required this.fullDetailFunc});
+      required this.fullDetailFunc,
+      required this.counterDetailBox});
 
   @override
   State<DoubleButtonTrailer> createState() => _DoubleButtonTrailerState();
@@ -293,6 +312,10 @@ class _DoubleButtonTrailerState extends State<DoubleButtonTrailer> {
             name: widget.counter.name,
             detailCount: widget.counter.detailCount + 1,
             properties: widget.counter.properties));
+    widget.counterDetailBox.add(CountDetail(
+        id: widget.counterDetailBox.length,
+        counterId: widget.counter.id,
+        countNumber: widget.counter.detailCount));
   }
 }
 
@@ -300,11 +323,13 @@ class SingleButtonTrailer extends StatefulWidget {
   final Box<Counter> box;
   final Counter counter;
   final VoidCallback fullDetailFunc;
+  final Box<CountDetail> counterDetailBox;
   const SingleButtonTrailer(
       {super.key,
       required this.box,
       required this.counter,
-      required this.fullDetailFunc});
+      required this.fullDetailFunc,
+      required this.counterDetailBox});
 
   @override
   State<SingleButtonTrailer> createState() => _SingleButtonTrailerState();

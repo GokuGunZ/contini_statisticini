@@ -3,9 +3,8 @@ import 'package:contini_statisticini/models/custom_attribute.dart';
 
 part 'count_detail.g.dart';
 
-
 @HiveType(typeId: 1)
-class CountDetail {
+class CountDetail extends HiveObject {
   @HiveField(0)
   int id;
 
@@ -19,7 +18,13 @@ class CountDetail {
   DateTime date = DateTime.now();
 
   @HiveField(4)
-  CustomAttribute attributes = CustomAttribute(id: 0);
+  List<Map<String,dynamic>>? attributes;
 
-  CountDetail({required this.id, required this.counterId, required this.countNumber});
+  CountDetail(
+      {required this.id, required this.counterId, required this.countNumber});
+
+  @override
+  String toString() {
+    return "CountDetail of Counter ${counterId}, with date ${date}";
+  }
 }

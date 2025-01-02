@@ -1,9 +1,9 @@
 import 'package:contini_statisticini/screens/counter_details.dart';
 import 'package:contini_statisticini/models/counter.dart';
+import 'package:contini_statisticini/models/count_detail.dart';
 import 'package:contini_statisticini/ui_utils/buttonAddCounter.dart';
 import 'package:contini_statisticini/ui_utils/createCounterModel.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -13,8 +13,22 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class MainHomeScaffold extends StatelessWidget {
+class MainHomeScaffold extends StatefulWidget {
+  @override
+  State<MainHomeScaffold> createState() => _MainHomeScaffoldState();
+}
+
+class _MainHomeScaffoldState extends State<MainHomeScaffold> {
   final Box<Counter> _countersBox = Hive.box<Counter>('counters');
+
+  final Box<CountDetail> _counterDetailBox =
+      Hive.box<CountDetail>('countDetail');
+
+  int getCountNumber(int id) {
+    return _counterDetailBox.values
+        .where((item) => item.counterId == id)
+        .length;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +53,33 @@ class MainHomeScaffold extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final counter = box.getAt(index);
                     return ListTile(
-                      title: Text(counter!.name,
-                          style: const TextStyle(fontSize: 20.0)),
-                      subtitle: Text('Details: ${counter.detailCount}'),
+                      title: Row(
+                        children: [
+                          DecoratedBox(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white70,
+                            ),
+                            child: SizedBox(
+                                height: 35,
+                                width: 35,
+                                child: Center(
+                                    child: Text(
+                                        '${getCountNumber(counter!.id)}'))),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(counter.name,
+                              style: const TextStyle(fontSize: 20.0)),
+                        ],
+                      ),
                       trailing: TrailerButtonContainer(
-                          requiredAdditionalData:
-                              counter.requiredAdditionalData,
-                          box: box,
-                          counter: counter),
+                        requiredAdditionalData: counter.requiredAdditionalData,
+                        counterBox: box,
+                        counter: counter,
+                        counterDetailBox: _counterDetailBox,
+                      ),
                       tileColor: Colors.amber[300],
                       onTap: () {
                         showModalBottomSheet(
@@ -56,16 +89,17 @@ class MainHomeScaffold extends StatelessWidget {
                             builder: (context) {
                               return DraggableScrollableSheet(
                                   initialChildSize: 0.5,
-                                  maxChildSize: 0.86,
-                                  minChildSize: 0.1,
+                                  minChildSize: 0.2,
+                                  maxChildSize: 0.91,
                                   expand: false,
-                                  builder: (context,
-                                      ScrollController scrollController) {
+                                  builder: (context, scrollController) {
                                     return CounterDetails(
                                         id: counter.id,
-                                        scrollController: scrollController);
+                                        counterName: counter.name,
+                                        scrollController: scrollController,
+                                        counterDetailsBox: _counterDetailBox);
                                   });
-                            });
+                            }).whenComplete(() => setState(() {}));
                       },
                     );
                   }),
