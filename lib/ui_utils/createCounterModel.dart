@@ -1,6 +1,7 @@
 import 'package:contini_statisticini/models/counter.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 
 class CreateCounterModel extends StatefulWidget {
   final int id;
@@ -43,13 +44,13 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
   void _createCounter() async {
     if (_createModalKey.currentState!.validate()) {
       _createModalKey.currentState!.save();
+    String uniqueId = Uuid().v1();
       await widget.countersBox.put(
-          widget.dynamicFields['id'],
+          uniqueId,
           Counter(
-              id: widget.dynamicFields['id'],
+              id: uniqueId,
               name: widget.dynamicFields['name'],
               properties: widget.dynamicFields['data']));
-      print(widget.dynamicFields);
       Navigator.of(context).pop();
     }
   }

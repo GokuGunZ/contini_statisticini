@@ -1,7 +1,7 @@
-import 'package:contini_statisticini/screens/counter_details.dart';
+import 'package:contini_statisticini/screens/DetailListBottomSheet.dart';
 import 'package:contini_statisticini/models/counter.dart';
 import 'package:contini_statisticini/models/count_detail.dart';
-import 'package:contini_statisticini/ui_utils/buttonAddCounter.dart';
+import 'package:contini_statisticini/ui_utils/increaseCountButtons.dart';
 import 'package:contini_statisticini/ui_utils/createCounterModel.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -24,7 +24,7 @@ class _MainHomeScaffoldState extends State<MainHomeScaffold> {
   final Box<CountDetail> _counterDetailBox =
       Hive.box<CountDetail>('countDetail');
 
-  int getCountNumber(int id) {
+  int getCountNumber(String id) {
     return _counterDetailBox.values
         .where((item) => item.counterId == id)
         .length;
@@ -93,7 +93,7 @@ class _MainHomeScaffoldState extends State<MainHomeScaffold> {
                                   maxChildSize: 0.91,
                                   expand: false,
                                   builder: (context, scrollController) {
-                                    return CounterDetails(
+                                    return DetailListBottomSheet(
                                         id: counter.id,
                                         counterName: counter.name,
                                         scrollController: scrollController,

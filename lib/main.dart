@@ -11,9 +11,10 @@ void main() async {
 
   Hive.registerAdapter(CounterAdapter());
   Hive.registerAdapter(CountDetailAdapter());
-
+  
   await Hive.openBox<Counter>('counters');
   await Hive.openBox<CountDetail>('countDetail');
+
 
   runApp(MyApp());
 }

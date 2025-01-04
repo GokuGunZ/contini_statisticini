@@ -5,18 +5,15 @@ part 'counter.g.dart';
 @HiveType(typeId: 0)
 class Counter {
   @HiveField(0)
-  int id;
+  String id;
 
   @HiveField(1)
   final String name;
 
   @HiveField(2)
-  int detailCount = 0;
-
-  @HiveField(3)
   bool requiredAdditionalData = false;
 
-  @HiveField(4)
+  @HiveField(3)
   final List<Map> properties;
 
   Counter(
@@ -24,7 +21,6 @@ class Counter {
       required this.name,
       detailCount = 0,
       required this.properties}) {
-    this.detailCount = detailCount;
     for (Map property in properties) {
       if (property['required']) {
         requiredAdditionalData = true;

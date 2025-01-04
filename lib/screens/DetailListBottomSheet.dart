@@ -3,14 +3,14 @@ import 'package:intl/intl.dart';
 import 'package:hive/hive.dart';
 import 'package:contini_statisticini/models/count_detail.dart';
 
-class CounterDetails extends StatefulWidget {
-  final int id;
+class DetailListBottomSheet extends StatefulWidget {
+  final String id;
   final String counterName;
   final ScrollController scrollController;
   late List<CountDetail> countDetails;
   final Box<CountDetail> counterDetailsBox;
 
-  CounterDetails(
+  DetailListBottomSheet(
       {super.key,
       required this.id,
       required this.counterName,
@@ -21,10 +21,10 @@ class CounterDetails extends StatefulWidget {
   }
 
   @override
-  State<CounterDetails> createState() => _CounterDetailsState();
+  State<DetailListBottomSheet> createState() => _DetailListBottomSheetState();
 }
 
-class _CounterDetailsState extends State<CounterDetails> {
+class _DetailListBottomSheetState extends State<DetailListBottomSheet> {
   Map<String, dynamic> counterDetails = {};
 
   @override
@@ -70,8 +70,9 @@ class _CounterDetailsState extends State<CounterDetails> {
           ),
           SizedBox(
             height: 50,
-            child: Center(child: Text(widget.counterName,
-                      style: const TextStyle(fontSize: 26.0))),
+            child: Center(
+                child: Text(widget.counterName,
+                    style: const TextStyle(fontSize: 26.0))),
           ),
           Expanded(
               child: ListView.builder(
@@ -81,26 +82,28 @@ class _CounterDetailsState extends State<CounterDetails> {
                   title: Row(
                     children: [
                       DecoratedBox(
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white70,
-                        ),
-                        child: SizedBox(
-                            height: 35,
-                            width: 35,
-                            child: Center(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white70,
+                          ),
+                          child: SizedBox(
+                              height: 35,
+                              width: 35,
+                              child: Center(
                                 child: Text('${index + 1}',
-                      style: const TextStyle(fontSize: 16.0)),
-                      ))),
+                                    style: const TextStyle(fontSize: 16.0)),
+                              ))),
                       SizedBox(
                         width: 10,
                       ),
                       Text(
-                          DateFormat('yyyy-MM-dd HH:mm:ss')
-                              .format(widget.countDetails[index].date),
+                          DateFormat('yyyy-MM-dd HH:mm:ss').format(
+                              widget.countDetails[index].date as DateTime),
                           style: const TextStyle(fontSize: 20.0)),
                     ],
                   ),
+                  subtitle:
+                      Text(widget.countDetails[index].attributes.toString()),
                   trailing: IconButton(
                       icon: Icon(Icons.delete),
                       onPressed: () {

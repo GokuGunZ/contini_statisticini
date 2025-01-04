@@ -3,6 +3,7 @@ import 'package:contini_statisticini/models/count_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 
 class TrailerButtonContainer extends StatefulWidget {
   final Box<Counter> counterBox;
@@ -54,11 +55,7 @@ class _TrailerButtonContainerState extends State<TrailerButtonContainer> {
 class detailedCountModal extends StatefulWidget {
   final Counter counter;
   final Box<Counter> box;
-  final Map<String, dynamic> countDetails = {
-    'selectedDate':
-        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
-    'selectedTime': TimeOfDay.now()
-  };
+  final Map<String, dynamic> countDetails = {};
 
   detailedCountModal({super.key, required this.counter, required this.box});
 
@@ -69,6 +66,7 @@ class detailedCountModal extends StatefulWidget {
 class _detailedCountModalState extends State<detailedCountModal> {
   final GlobalKey<FormState> _addDetailedCount = GlobalKey<FormState>();
   final Box<CountDetail> _countDetailBox = Hive.box<CountDetail>('countDetail');
+  DateTime date = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +83,13 @@ class _detailedCountModalState extends State<detailedCountModal> {
                   Text('Count Time'),
                 ],
               ),
-              DateTimePickerRow(countDetails: widget.countDetails),
+              DateTimePickerRow(
+                onDateSelected: (newDateTime) {
+                  setState(() {
+                    date = newDateTime;
+                  });
+                },
+              ),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: widget.counter.properties.map((item) {
@@ -112,11 +116,15 @@ class _detailedCountModalState extends State<detailedCountModal> {
               onPressed: () async {
                 if (_addDetailedCount.currentState!.validate()) {
                   _addDetailedCount.currentState!.save();
-                  // add --- await widget.countDetails.put(data);
-                  await _countDetailBox.add(CountDetail(
-                      id: _countDetailBox.length,
-                      counterId: widget.counter.id,
-                      countNumber: widget.counter.detailCount));
+                  String uniqueId = Uuid().v1();
+                  await _countDetailBox.put(
+                      uniqueId,
+                      CountDetail(
+                        id: uniqueId,
+                        date: date,
+                        counterId: widget.counter.id,
+                        attributes: widget.countDetails,
+                      ));
                   Navigator.of(context).pop();
                 }
               },
@@ -185,8 +193,11 @@ class _detailedCountModalState extends State<detailedCountModal> {
             ],
           ),
           DateTimePickerRow(
-            countDetails: widget.countDetails,
-            fieldname: item['fieldname'],
+            onDateSelected: (newDateTime) {
+              setState(() {
+                widget.countDetails[item['fieldname']] = newDateTime;
+              });
+            },
           )
         ]);
       default:
@@ -198,21 +209,20 @@ class _detailedCountModalState extends State<detailedCountModal> {
 }
 
 class DateTimePickerRow extends StatefulWidget {
-  Map<String, dynamic> countDetails;
-  final String? fieldname;
+  final ValueChanged<DateTime>? onDateSelected;
 
-  DateTimePickerRow({super.key, required this.countDetails, this.fieldname}) {
-    if (fieldname != null) {
-      countDetails[fieldname!] = <String, dynamic>{};
-      countDetails = countDetails[fieldname!];
-    }
-  }
+  DateTimePickerRow({super.key, this.onDateSelected});
 
   @override
   State<DateTimePickerRow> createState() => _DateTimePickerRowState();
 }
 
 class _DateTimePickerRowState extends State<DateTimePickerRow> {
+  var selectedTime =
+      TimeOfDay(hour: DateTime.now().hour, minute: DateTime.now().minute);
+  var selectedDate = DateTime.now();
+  DateTime selectedDateTime = DateTime.now();
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -223,18 +233,9 @@ class _DateTimePickerRowState extends State<DateTimePickerRow> {
           onPressed: () => _pickDate(context),
         ),
         const SizedBox(width: 16),
-        Text(
-          widget.countDetails['selectedDate'] != null
-              ? "${widget.countDetails['selectedDate']!.toLocal()}"
-                  .split(' ')[0]
-              : "No date \nselected",
-        ),
+        Text("${selectedDate.toLocal()}".split(' ')[0]),
         const SizedBox(width: 16),
-        Text(
-          widget.countDetails['selectedTime'] != null
-              ? widget.countDetails['selectedTime']!.format(context)
-              : "No time \nselected",
-        ),
+        Text(selectedTime.format(context)),
         const SizedBox(width: 16),
         IconButton(
           icon: Icon(Icons.access_time),
@@ -247,13 +248,16 @@ class _DateTimePickerRowState extends State<DateTimePickerRow> {
   Future<void> _pickDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: widget.countDetails['selectedDate'] ?? DateTime.now(),
+      initialDate: selectedDate,
       firstDate: DateTime(1950),
       lastDate: DateTime(2050),
     );
-    if (picked != null && picked != widget.countDetails['selectedDate']) {
+    if (picked != null && picked != selectedDate) {
       setState(() {
-        widget.countDetails['selectedDate'] = picked;
+        selectedDateTime = DateTime(picked.year, picked.month, picked.day,
+            selectedDateTime.hour, selectedDateTime.minute, 00);
+        selectedDate = picked;
+        widget.onDateSelected!(selectedDateTime);
       });
     }
   }
@@ -261,11 +265,19 @@ class _DateTimePickerRowState extends State<DateTimePickerRow> {
   Future<void> _pickTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: widget.countDetails['selectedTime'] ?? TimeOfDay.now(),
+      initialTime: selectedTime,
     );
-    if (picked != null && picked != widget.countDetails['selectedTime']) {
+    if (picked != null && picked != selectedTime) {
       setState(() {
-        widget.countDetails['selectedTime'] = picked;
+        selectedDateTime = DateTime(
+            selectedDateTime.year,
+            selectedDateTime.month,
+            selectedDateTime.day,
+            picked.hour,
+            picked.minute,
+            00);
+        selectedTime = picked;
+        widget.onDateSelected!(selectedDateTime);
       });
     }
   }
@@ -305,17 +317,20 @@ class _DoubleButtonTrailerState extends State<DoubleButtonTrailer> {
   }
 
   void fastAdd() {
-    widget.box.putAt(
+    String uniqueId = Uuid().v1();
+    widget.box.put(
         widget.counter.id,
         Counter(
             id: widget.counter.id,
             name: widget.counter.name,
-            detailCount: widget.counter.detailCount + 1,
             properties: widget.counter.properties));
-    widget.counterDetailBox.add(CountDetail(
-        id: widget.counterDetailBox.length,
-        counterId: widget.counter.id,
-        countNumber: widget.counter.detailCount));
+    widget.counterDetailBox.put(
+        uniqueId,
+        CountDetail(
+          id: uniqueId,
+          date: DateTime.now(),
+          counterId: widget.counter.id,
+        ));
   }
 }
 
