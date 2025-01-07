@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:hive/hive.dart';
 import 'package:contini_statisticini/models/count_detail.dart';
 
+// ignore: must_be_immutable
 class DetailListBottomSheet extends StatefulWidget {
   final String id;
   final String counterName;

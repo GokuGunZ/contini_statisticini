@@ -44,7 +44,7 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
   void _createCounter() async {
     if (_createModalKey.currentState!.validate()) {
       _createModalKey.currentState!.save();
-    String uniqueId = Uuid().v1();
+      String uniqueId = Uuid().v1();
       await widget.countersBox.put(
           uniqueId,
           Counter(
@@ -120,29 +120,6 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
                               children: [
                                 Flexible(
                                   flex: 3,
-                                  child: TextFormField(
-                                    decoration: InputDecoration(
-                                      labelText: 'Field Name ${index + 1}',
-                                    ),
-                                    initialValue: '',
-                                    onChanged: (value) {
-                                      widget.dynamicFields['data'][index]
-                                          ['index'] = index;
-                                      widget.dynamicFields['data'][index]
-                                          ['fieldname'] = value;
-                                    },
-                                    validator: (value) {
-                                      return value == null || value.isEmpty
-                                          ? "This field cannot be empty"
-                                          : null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 5,
-                                ),
-                                Flexible(
-                                  flex: 3,
                                   child: DropdownButtonFormField(
                                     decoration: InputDecoration(
                                       labelText: 'Field type',
@@ -185,14 +162,33 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
                                 ),
                               ],
                             ),
-                            widget.dynamicFields['data'][index]['fieldtype'] ==
-                                    "Set di valori"
-                                ? MultiSelectForm(
-                                    values: widget.dynamicFields['data'][index]
-                                        ['values'])
-                                : Divider(
-                                    height: 35,
-                                  ),
+                            Wrap(
+                              children: [
+                                widget.dynamicFields['data'][index]
+                                            ['fieldtype'] ==
+                                        "Set di valori"
+                                    ? MultiSelectForm(
+                                        dynamicFields: widget.dynamicFields,
+                                        index: index)
+                                    : TextFormField(
+                                        decoration: InputDecoration(
+                                          labelText: 'Field Name ${index + 1}',
+                                        ),
+                                        initialValue: '',
+                                        onChanged: (value) {
+                                          widget.dynamicFields['data'][index]
+                                              ['index'] = index;
+                                          widget.dynamicFields['data'][index]
+                                              ['fieldname'] = value;
+                                        },
+                                        validator: (value) {
+                                          return value == null || value.isEmpty
+                                              ? "This field cannot be empty"
+                                              : null;
+                                        },
+                                      ),
+                              ],
+                            ),
                           ],
                         ),
                       );
@@ -234,8 +230,13 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
 }
 
 class MultiSelectForm extends StatefulWidget {
-  final List<String> values;
-  const MultiSelectForm({super.key, required this.values});
+  late List<String> values;
+  final Map<String, dynamic> dynamicFields;
+  final int index;
+  MultiSelectForm(
+      {super.key, required this.dynamicFields, required this.index}) {
+    values = dynamicFields['data'][index]['values'];
+  }
   @override
   _MultiSelectFormState createState() => _MultiSelectFormState();
 }
@@ -245,8 +246,11 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
 
   void _addValue(String value) {
     if (value.isNotEmpty && !widget.values.contains(value)) {
+      var values = value.split(',');
       setState(() {
-        widget.values.add(value);
+        for (String val in values) {
+          widget.values.add(val.trim());
+        }
       });
       _controller.clear(); // Clear the input box
     }
@@ -260,35 +264,68 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Text field to input values
-          TextField(
-            controller: _controller,
-            onSubmitted: _addValue, // Add value when 'Enter' is pressed
-            decoration: InputDecoration(
-              labelText: 'Enter values',
-              border: OutlineInputBorder(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 8,
+        ),
+        Row(
+          children: [
+            Flexible(
+              child: TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Field Name ${widget.index + 1}',
+                ),
+                initialValue: '',
+                onChanged: (value) {
+                  widget.dynamicFields['data'][widget.index]['index'] =
+                      widget.index;
+                  widget.dynamicFields['data'][widget.index]['fieldname'] =
+                      value;
+                },
+                validator: (value) {
+                  return value == null || value.isEmpty
+                      ? "This field cannot be empty"
+                      : null;
+                },
+              ),
             ),
-          ),
-          SizedBox(height: 16.0),
-          // Wrap widget to display chips
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: widget.values.map((value) {
-              return Chip(
-                label: Text(value),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () => _removeValue(value),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+            SizedBox(
+              width: 8,
+            ),
+            Flexible(
+              child: TextFormField(
+                controller: _controller,
+                onFieldSubmitted:
+                    _addValue, // Add value when 'Enter' is pressed
+                decoration: InputDecoration(
+                  labelText: 'Enter values',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  return widget.values.isEmpty
+                      ? 'You must enter some values'
+                      : null;
+                },
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8.0),
+        // Wrap widget to display chips
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 4.0,
+          children: widget.values.map((value) {
+            return Chip(
+              label: Text(value),
+              deleteIcon: Icon(Icons.close),
+              onDeleted: () => _removeValue(value),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }
