@@ -230,26 +230,24 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
 }
 
 class MultiSelectForm extends StatefulWidget {
-  late List<String> values;
   final Map<String, dynamic> dynamicFields;
   final int index;
-  MultiSelectForm(
-      {super.key, required this.dynamicFields, required this.index}) {
-    values = dynamicFields['data'][index]['values'];
-  }
+  const MultiSelectForm(
+      {super.key, required this.dynamicFields, required this.index});
   @override
   _MultiSelectFormState createState() => _MultiSelectFormState();
 }
 
 class _MultiSelectFormState extends State<MultiSelectForm> {
+  late List<String> dfValues;
   final TextEditingController _controller = TextEditingController();
 
   void _addValue(String value) {
-    if (value.isNotEmpty && !widget.values.contains(value)) {
+    if (value.isNotEmpty && !dfValues.contains(value)) {
       var values = value.split(',');
       setState(() {
         for (String val in values) {
-          widget.values.add(val.trim());
+          dfValues.add(val.trim());
         }
       });
       _controller.clear(); // Clear the input box
@@ -258,12 +256,13 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
 
   void _removeValue(String value) {
     setState(() {
-      widget.values.remove(value);
+      dfValues.remove(value);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    dfValues = widget.dynamicFields['data'][widget.index]['values'];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -304,7 +303,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
-                  return widget.values.isEmpty
+                  return dfValues.isEmpty
                       ? 'You must enter some values'
                       : null;
                 },
@@ -317,7 +316,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
         Wrap(
           spacing: 8.0,
           runSpacing: 4.0,
-          children: widget.values.map((value) {
+          children: dfValues.map((value) {
             return Chip(
               label: Text(value),
               deleteIcon: Icon(Icons.close),
