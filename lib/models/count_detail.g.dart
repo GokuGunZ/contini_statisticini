@@ -20,7 +20,8 @@ class CountDetailAdapter extends TypeAdapter<CountDetail> {
       id: fields[0] as String,
       counterId: fields[1] as String,
       attributes: (fields[3] as Map?)?.cast<String, dynamic>(),
-    )..date = fields[2] as DateTime;
+      date: fields[2] as DateTime?,
+    );
   }
 
   @override

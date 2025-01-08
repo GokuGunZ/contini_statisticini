@@ -136,7 +136,7 @@ class _detailedCountModalState extends State<detailedCountModal> {
 
   Widget countDetailForm(Map<dynamic, dynamic> item) {
     switch (item['fieldtype']) {
-      case 'Numero Intero':
+      case "Integer Number field":
         return TextFormField(
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: InputDecoration(labelText: "${item['fieldname']}"),
@@ -144,27 +144,27 @@ class _detailedCountModalState extends State<detailedCountModal> {
             widget.countDetails[item['fieldname']] = value;
           },
           validator: (value) {
-            if (item['required'] == true) {
+            if (item['required'] == true && (value == null || value.isEmpty)) {
               return "Must enter a number";
             }
             return null;
           },
           keyboardType: TextInputType.number,
         );
-      case 'Testo':
+      case "Text field":
         return TextFormField(
           decoration: InputDecoration(labelText: "${item['fieldname']}"),
           onChanged: (value) {
             widget.countDetails[item['fieldname']] = value;
           },
           validator: (value) {
-            if (item['required'] == true) {
+            if (item['required'] == true && (value == null || value.isEmpty)) {
               return "Must enter some text";
             }
             return null;
           },
         );
-      case 'Set di valori':
+      case "Category field":
         List<DropdownMenuItem> dropdownItems = <DropdownMenuItem>[];
         for (String val in item['values']) {
           dropdownItems.add(DropdownMenuItem(value: val, child: Text(val)));
@@ -177,14 +177,14 @@ class _detailedCountModalState extends State<detailedCountModal> {
             widget.countDetails[item['fieldname']] = value;
           },
           validator: (value) {
-            if (item['required'] == true) {
+            if (item['required'] == true && (value == null || value.isEmpty)) {
               return "Must enter some text";
             }
             return null;
           },
           items: dropdownItems,
         );
-      case 'Data':
+      case "Date field":
         return Column(children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -211,7 +211,7 @@ class _detailedCountModalState extends State<detailedCountModal> {
 class DateTimePickerRow extends StatefulWidget {
   final ValueChanged<DateTime>? onDateSelected;
 
-  DateTimePickerRow({super.key, this.onDateSelected});
+  const DateTimePickerRow({super.key, this.onDateSelected});
 
   @override
   State<DateTimePickerRow> createState() => _DateTimePickerRowState();

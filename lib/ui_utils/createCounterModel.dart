@@ -93,14 +93,31 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
                 widget.dynamicFields['data'].length != 0
                     ? Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                         Padding(
-                          padding: const EdgeInsets.all(5.0),
+                          padding: const EdgeInsets.only(right: 16.0, top: 2),
                           child: Text(
                             "Required \n Fields",
                             textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 11),
                           ),
                         )
                       ])
-                    : SizedBox.shrink(),
+                    : Column(
+                      children: [SizedBox(
+                        height: 20,
+                      ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                                Flexible(
+                                  child: Text(
+                                    "Add some custom fields to your counter!",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 18),
+                                  ),
+                                )
+                              ]),
+                      ],
+                    ),
 
                 // Constraining the ListView.builder
                 ConstrainedBox(
@@ -125,10 +142,10 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
                                       labelText: 'Field type',
                                     ),
                                     items: [
-                                      "Numero Intero",
-                                      "Testo",
-                                      "Data",
-                                      "Set di valori"
+                                      "Integer Number field",
+                                      "Text field",
+                                      "Date field",
+                                      "Category field"
                                     ]
                                         .map((e) => DropdownMenuItem(
                                             value: e, child: Text(e)))
@@ -166,7 +183,7 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
                               children: [
                                 widget.dynamicFields['data'][index]
                                             ['fieldtype'] ==
-                                        "Set di valori"
+                                        "Category field"
                                     ? MultiSelectForm(
                                         dynamicFields: widget.dynamicFields,
                                         index: index)
@@ -207,7 +224,6 @@ class _CreateCounterModelState extends State<CreateCounterModel> {
                     child: const Text("Add Field"),
                   ),
                 ]),
-                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -303,9 +319,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
-                  return dfValues.isEmpty
-                      ? 'You must enter some values'
-                      : null;
+                  return dfValues.isEmpty ? 'You must enter some values' : null;
                 },
               ),
             ),
