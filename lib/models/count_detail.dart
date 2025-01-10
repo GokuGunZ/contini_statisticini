@@ -21,6 +21,6 @@ class CountDetail extends HiveObject {
 
   @override
   String toString() {
-    return "CountDetail of Counter $counterId, with date $date";
+    return "CountDetail of Counter $counterId, with date $date and attributes ${attributes.toString()}";
   }
 }
