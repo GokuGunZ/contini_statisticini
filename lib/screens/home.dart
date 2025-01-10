@@ -1,8 +1,8 @@
-import 'package:contini_statisticini/screens/DetailListBottomSheet.dart';
+import 'package:contini_statisticini/screens/detail_list_bottom_sheet.dart';
 import 'package:contini_statisticini/models/counter.dart';
 import 'package:contini_statisticini/models/count_detail.dart';
-import 'package:contini_statisticini/ui_utils/increaseCountButtons.dart';
-import 'package:contini_statisticini/ui_utils/createCounterModel.dart';
+import 'package:contini_statisticini/ui_utils/add_count_buttons.dart';
+import 'package:contini_statisticini/ui_utils/create_counter_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -94,8 +94,7 @@ class _MainHomeScaffoldState extends State<MainHomeScaffold> {
                                   expand: false,
                                   builder: (context, scrollController) {
                                     return DetailListBottomSheet(
-                                        id: counter.id,
-                                        counterName: counter.name,
+                                        counter: counter,
                                         scrollController: scrollController,
                                         counterDetailsBox: _counterDetailBox);
                                   });

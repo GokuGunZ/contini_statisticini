@@ -89,6 +89,7 @@ class _detailedCountModalState extends State<detailedCountModal> {
                     date = newDateTime;
                   });
                 },
+                mainDateTime: true,
               ),
               Column(
                 mainAxisSize: MainAxisSize.min,
@@ -117,14 +118,13 @@ class _detailedCountModalState extends State<detailedCountModal> {
                 if (_addDetailedCount.currentState!.validate()) {
                   _addDetailedCount.currentState!.save();
                   String uniqueId = Uuid().v1();
-                  await _countDetailBox.put(
-                      uniqueId,
-                      CountDetail(
-                        id: uniqueId,
-                        date: date,
-                        counterId: widget.counter.id,
-                        attributes: widget.countDetails,
-                      ));
+                  CountDetail newDetail = CountDetail(
+                    id: uniqueId,
+                    date: date,
+                    counterId: widget.counter.id,
+                    attributes: widget.countDetails,
+                  );
+                  await _countDetailBox.put(uniqueId, newDetail);
                   Navigator.of(context).pop();
                 }
               },
@@ -208,23 +208,28 @@ class _detailedCountModalState extends State<detailedCountModal> {
   }
 }
 
+// ignore: must_be_immutable
 class DateTimePickerRow extends StatefulWidget {
   final ValueChanged<DateTime>? onDateSelected;
+  bool mainDateTime;
 
-  const DateTimePickerRow({super.key, this.onDateSelected});
+  DateTimePickerRow(
+      {super.key, this.onDateSelected, this.mainDateTime = false});
 
   @override
   State<DateTimePickerRow> createState() => _DateTimePickerRowState();
 }
 
 class _DateTimePickerRowState extends State<DateTimePickerRow> {
-  var selectedTime =
+  TimeOfDay selectedTime =
       TimeOfDay(hour: DateTime.now().hour, minute: DateTime.now().minute);
-  var selectedDate = DateTime.now();
+  DateTime selectedDate = DateTime.now();
+  bool dateTimeSet = false;
   DateTime selectedDateTime = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
+    bool dateTimeSet = widget.mainDateTime;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -233,9 +238,11 @@ class _DateTimePickerRowState extends State<DateTimePickerRow> {
           onPressed: () => _pickDate(context),
         ),
         const SizedBox(width: 16),
-        Text("${selectedDate.toLocal()}".split(' ')[0]),
+        dateTimeSet
+            ? Text("${selectedDate.toLocal()}".split(' ')[0])
+            : Text("Pick\nDate"),
         const SizedBox(width: 16),
-        Text(selectedTime.format(context)),
+        dateTimeSet ? Text(selectedTime.format(context)) : Text("Pick\nTime"),
         const SizedBox(width: 16),
         IconButton(
           icon: Icon(Icons.access_time),
@@ -252,6 +259,11 @@ class _DateTimePickerRowState extends State<DateTimePickerRow> {
       firstDate: DateTime(1950),
       lastDate: DateTime(2050),
     );
+    if (picked != null) {
+      setState(() {
+        dateTimeSet = true;
+      });
+    }
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDateTime = DateTime(picked.year, picked.month, picked.day,
@@ -267,6 +279,11 @@ class _DateTimePickerRowState extends State<DateTimePickerRow> {
       context: context,
       initialTime: selectedTime,
     );
+    if (picked != null) {
+      setState(() {
+        dateTimeSet = true;
+      });
+    }
     if (picked != null && picked != selectedTime) {
       setState(() {
         selectedDateTime = DateTime(
